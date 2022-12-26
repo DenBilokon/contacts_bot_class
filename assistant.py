@@ -26,15 +26,10 @@ class AddressBook(UserDict):
         return self.data[record_name].show_all()
 
     def show_all_rec(self):
-        return "\n".join(
-            [
-                f'{rec.name} : {", ".join([p.value for p in rec.phones])}'
-                for rec in self.data.values()
-            ]
-        )
+        return "\n".join(f'{rec.name} : {", ".join([p.value for p in rec.phones])}' for rec in self.data.values())
 
-    def change_record(self, name, old_record_num, new_record_num):
-        record = self.data.get(name)
+    def change_record(self, name_user, old_record_num, new_record_num):
+        record = self.data.get(name_user)
         if record:
             record.change(old_record_num, new_record_num)
 
@@ -54,9 +49,9 @@ class Name(Field):
 
 class Phone(Field):
     @staticmethod
-    def sanitize_phone_number(phone):
+    def sanitize_phone_number(phone_user):
         new_phone = (
-            phone.strip()
+            phone_user.strip()
             .removeprefix("+")
             .replace("(", "")
             .replace(")", "")
@@ -71,10 +66,12 @@ class Phone(Field):
 
 
 class Record:
-    def __init__(self, name, phone=None):
+    def __init__(self, name, phone=None, old_phone=None):
         self.name = name
+        self.old_phone = old_phone
+        self.phone = phone
         self.phones = list()
-        if phone:
+        if isinstance(phone, Phone):
             self.phones.append(phone)
 
 
@@ -103,11 +100,12 @@ def add(*args):
 
 @input_error
 def change(*args):
-    # for phone in self.phones:
-    #     if old_phone == phone.value:
-    #         self.phones.remove(phone)
-    #         self.phones.append(Phone(new_phone))
-    pass
+    name = Name(args[0])
+    old_phone = Phone(args[1])
+    new_phone = Phone(args[2])
+    rec = Record(name, old_phone, new_phone)
+    ADDRESSBOOK.change_record(rec)
+
 
 
 # @input_error
@@ -166,19 +164,5 @@ def main():
 
 
 if __name__ == "__main__":
-
-    name = Name("Bill")
-    phone = Phone("1234567890")
-    rec = Record(name, phone)
-    ab = AddressBook()
-    ab.add_record(rec)
-
-    assert isinstance(ab["Bill"], Record)
-    assert isinstance(ab["Bill"].name, Name)
-    assert isinstance(ab["Bill"].phones, list)
-    assert isinstance(ab["Bill"].phones[0], Phone)
-    assert ab["Bill"].phones[0].value == "1234567890"
-
-    print("All Ok)")
 
     main()
