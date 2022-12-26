@@ -25,8 +25,13 @@ class AddressBook(UserDict):
     def show_rec(self, record_name, *args):
         return self.data[record_name].show_all()
 
-    def show_all_rec(self, *args):
-        return [self.data[record_name].show_all() for record_name in self.data.keys()]
+    def show_all_rec(self):
+        return "\n".join(
+            [
+                f'{rec.name} : {", ".join([p.value for p in rec.phones])}'
+                for rec in self.data.values()
+            ]
+        )
 
     def change_record(self, name, old_record_num, new_record_num):
         record = self.data.get(name)
@@ -37,6 +42,9 @@ class AddressBook(UserDict):
 class Field:
     def __init__(self, value):
         self.value = value
+
+    def __str__(self) -> str:
+        return self.value
 
 
 class Name(Field):
@@ -69,32 +77,8 @@ class Record:
         if phone:
             self.phones.append(phone)
 
-    @input_error
-    def add(self, phone):
-        if phone:
-            self.phones.append(Phone(phone))
 
-    @input_error
-    def change(self, old_phone, new_phone):
-        for phone in self.phones:
-            if old_phone == phone.value:
-                self.phones.remove(phone)
-                self.phones.append(Phone(new_phone))
-
-    @input_error
-    def delete_all(self):
-        self.phones = list()
-
-    @input_error
-    def delete_this(self, phone_number):
-        for phone in self.phones:
-            if phone_number == phone.value:
-                self.phones.remove(phone)
-
-    @input_error
-    def show_all(self):
-        phones_list = [phone.value for phone in self.phones]
-        return f"{self.name.value}: {phones_list}"
+ADDRESSBOOK = AddressBook()
 
 
 def hello(*args):
@@ -102,18 +86,63 @@ def hello(*args):
 
 
 def bye(*args):
-    return 'Bye'
+    return "Bye"
 
 
 def help_user(*args):
     return HELP_TEXT
 
 
+@input_error
+def add(*args):
+    name = Name(args[0])
+    phone = Phone(args[1])
+    rec = Record(name, phone)
+    ADDRESSBOOK.add_record(rec)
+
+
+@input_error
+def change(*args):
+    # for phone in self.phones:
+    #     if old_phone == phone.value:
+    #         self.phones.remove(phone)
+    #         self.phones.append(Phone(new_phone))
+    pass
+
+
+# @input_error
+# def delete_all(*args):
+#     self.phones = list()
+
+# @input_error
+# def delete_this(*args):
+#     for phone in self.phones:
+#         if phone_number == phone.value:
+#             self.phones.remove(phone)
+
+
+# @input_error
+def show_all(*args):
+    return ADDRESSBOOK.show_all_rec()
+
+
+COMMANDS = {
+    hello: ["hello", "hi"],
+    show_all: ["show all"],
+    # show_rec: ["phone"],
+    add: ["add"],
+    change: ["change"],
+    # remove_record: ["delete contact"],
+    help_user: ["help"],
+    bye: [".", "bye", "good bye", "close", "exit"],
+}
+
+
 def parse_command(text: str):
     for comm, key_words in COMMANDS.items():
         for key_word in key_words:
             if text.startswith(key_word):
-                return comm, text.replace(key_word, '').strip().split(' ')
+                return comm, text.replace(key_word, "").strip().split(" ")
     return None, None
 
 
@@ -125,42 +154,31 @@ def run_bot(user_input):
     return command(*data)
 
 
-ADDRESSBOOK = AddressBook()
-
-COMMANDS = {hello: ['hello', 'hi'],
-            ADDRESSBOOK.show_all_rec: ['show all'],
-            ADDRESSBOOK.show_rec: ['phone'],
-            ADDRESSBOOK.add_record: ['add'],
-            ADDRESSBOOK.change_record: ['change'],
-            ADDRESSBOOK.remove_record: ['delete contact'],
-            help_user: ['help'],
-            bye: ['.', 'bye', 'good bye', 'close', 'exit']
-            }
-
-
 def main():
 
     while True:
         user_input = str(input(">>>> "))
         result = run_bot(user_input)
-        if result == 'Bye':
-            print('Goodbye!')
+        if result == "Bye":
+            print("Goodbye!")
             break
         print(result)
 
 
 if __name__ == "__main__":
 
-    name = Name('Bill')
-    phone = Phone('1234567890')
+    name = Name("Bill")
+    phone = Phone("1234567890")
     rec = Record(name, phone)
     ab = AddressBook()
     ab.add_record(rec)
 
-    assert isinstance(ab['Bill'], Record)
-    assert isinstance(ab['Bill'].name, Name)
-    assert isinstance(ab['Bill'].phones, list)
-    assert isinstance(ab['Bill'].phones[0], Phone)
-    assert ab['Bill'].phones[0].value == '1234567890'
+    assert isinstance(ab["Bill"], Record)
+    assert isinstance(ab["Bill"].name, Name)
+    assert isinstance(ab["Bill"].phones, list)
+    assert isinstance(ab["Bill"].phones[0], Phone)
+    assert ab["Bill"].phones[0].value == "1234567890"
 
-    print('All Ok)')
+    print("All Ok)")
+
+    main()
