@@ -16,14 +16,14 @@ HELP_TEXT = """This contact bot save your contacts
 
 
 class AddressBook(UserDict):
-    def add_record(self, record, *args):
+    def add_record(self, record):
         self.data[record.name.value] = record
 
-    def remove_record(self, record, *args):
+    def remove_record(self, record):
         self.data.pop(record.name.value, None)
 
-    def show_rec(self, record_name, *args):
-        return self.data[record_name].show_all()
+    def show_rec(self, name):
+        return f'{name} : {", ".join([phone.value for phone in self.data[name].phones])}'
 
     def show_all_rec(self):
         return "\n".join(f'{rec.name} : {", ".join([p.value for p in rec.phones])}' for rec in self.data.values())
@@ -66,13 +66,23 @@ class Phone(Field):
 
 
 class Record:
-    def __init__(self, name, phone=None, old_phone=None):
+    def __init__(self, name, phone=None):
         self.name = name
-        self.old_phone = old_phone
         self.phone = phone
         self.phones = list()
         if isinstance(phone, Phone):
             self.phones.append(phone)
+
+    def add_phone(self, phone: Phone):
+        self.phones.append(phone)
+
+    def change(self, old_phone: str, new_phone: str):
+        for phone in self.phones:
+            if phone.value == old_phone:
+                self.phones.remove(phone)
+                self.phones.append(Phone(new_phone))
+                return
+        print(f"Phone {old_phone} not found in the Record")
 
 
 ADDRESSBOOK = AddressBook()
@@ -94,29 +104,39 @@ def help_user(*args):
 def add(*args):
     name = Name(args[0])
     phone = Phone(args[1])
-    rec = Record(name, phone)
-    ADDRESSBOOK.add_record(rec)
+    rec = ADDRESSBOOK.get(name.value)
+    if rec:
+        rec.add_phone(phone)
+    else:
+        rec = Record(name, phone)
+        ADDRESSBOOK.add_record(rec)
+    return f'Contact {name} {phone} added'
 
 
 @input_error
 def change(*args):
+    name = args[0]
+    old_phone = args[1]
+    new_phone = args[2]
+    ADDRESSBOOK.change_record(name, old_phone, new_phone)
+    return f'Contact {name} {old_phone} to {new_phone} changed'
+
+@input_error
+def delete_contact(*args):
     name = Name(args[0])
-    old_phone = Phone(args[1])
-    new_phone = Phone(args[2])
-    rec = Record(name, old_phone, new_phone)
-    ADDRESSBOOK.change_record(rec)
-
-
-
-# @input_error
-# def delete_all(*args):
-#     self.phones = list()
+    rec = Record(name)
+    ADDRESSBOOK.remove_record(rec)
+    return f'Contact {name} deleted'
 
 # @input_error
 # def delete_this(*args):
 #     for phone in self.phones:
 #         if phone_number == phone.value:
 #             self.phones.remove(phone)
+
+
+def phone(*args):
+    return ADDRESSBOOK.show_rec(args[0])
 
 
 # @input_error
@@ -127,10 +147,10 @@ def show_all(*args):
 COMMANDS = {
     hello: ["hello", "hi"],
     show_all: ["show all"],
-    # show_rec: ["phone"],
+    phone: ["phone"],
     add: ["add"],
     change: ["change"],
-    # remove_record: ["delete contact"],
+    delete_contact: ["delete"],
     help_user: ["help"],
     bye: [".", "bye", "good bye", "close", "exit"],
 }
