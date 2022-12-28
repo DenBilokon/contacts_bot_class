@@ -7,6 +7,8 @@ HELP_TEXT = """This contact bot save your contacts
     Example: add User_name 095-xxx-xx-xx
       'change' - change users old phone to new phone. Input user name, old phone and new phone
     Example: change User_name 095-xxx-xx-xx 050-xxx-xx-xx
+      'delete' - delete contact (name and phones). Input user name
+    Example: delete User_name
       'phone' - show contacts of input user. Input user name
     Example: phone User_name
       'show all' - show all contacts
