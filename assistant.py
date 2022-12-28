@@ -111,7 +111,7 @@ def help_user(*args):
 # Add user or user with phone to AddressBook
 @input_error
 def add(*args):
-    name = Name(args[0])
+    name = Name(str(args[0]).title())
     phone_num = Phone(args[1])
     rec = ADDRESSBOOK.get(name.value)
     if rec:
@@ -125,7 +125,7 @@ def add(*args):
 # Change users contact to another contact
 @input_error
 def change(*args):
-    name = args[0]
+    name = str(args[0]).title()
     old_phone = args[1]
     new_phone = args[2]
     ADDRESSBOOK.change_record(name, old_phone, new_phone)
@@ -135,7 +135,7 @@ def change(*args):
 # Delete contact
 @input_error
 def delete_contact(*args):
-    name = Name(args[0])
+    name = Name(str(args[0]).title())
     rec = Record(name)
     ADDRESSBOOK.remove_record(rec)
     return f'Contact {name} deleted'
@@ -143,7 +143,7 @@ def delete_contact(*args):
 
 # Show some contact
 def phone(*args):
-    return ADDRESSBOOK.show_rec(args[0])
+    return ADDRESSBOOK.show_rec(str(args[0]).title())
 
 
 # Show all contacts
@@ -173,7 +173,7 @@ def parse_command(text: str):
 
 # Функція спілкування з юзером і виконання функцій відповідно до команди
 def run_bot(user_input):
-    command, data = parse_command(user_input)
+    command, data = parse_command(user_input.lower())
     if not command:
         return "Incorrect input. Try again"
     return command(*data)
