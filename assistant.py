@@ -16,6 +16,8 @@ HELP_TEXT = """This contact bot save your contacts
 
 
 class AddressBook(UserDict):
+    """ Dictionary class """
+
     def add_record(self, record):
         self.data[record.name.value] = record
 
@@ -48,6 +50,8 @@ class Name(Field):
 
 
 class Phone(Field):
+    """Class for do phone number standard type"""
+
     @staticmethod
     def sanitize_phone_number(phone_user):
         new_phone = (
@@ -66,6 +70,8 @@ class Phone(Field):
 
 
 class Record:
+    """ Class for record name or phones"""
+
     def __init__(self, name, phone=None):
         self.name = name
         self.phone = phone
@@ -92,27 +98,31 @@ def hello(*args):
     return "How can I help you?"
 
 
+# Exit assistant
 def bye(*args):
     return "Bye"
 
 
+# README instructions
 def help_user(*args):
     return HELP_TEXT
 
 
+# Add user or user with phone to AddressBook
 @input_error
 def add(*args):
     name = Name(args[0])
-    phone = Phone(args[1])
+    phone_num = Phone(args[1])
     rec = ADDRESSBOOK.get(name.value)
     if rec:
-        rec.add_phone(phone)
+        rec.add_phone(phone_num)
     else:
-        rec = Record(name, phone)
+        rec = Record(name, phone_num)
         ADDRESSBOOK.add_record(rec)
-    return f'Contact {name} {phone} added'
+    return f'Contact {name} {phone_num} added'
 
 
+# Change users contact to another contact
 @input_error
 def change(*args):
     name = args[0]
@@ -121,6 +131,8 @@ def change(*args):
     ADDRESSBOOK.change_record(name, old_phone, new_phone)
     return f'Contact {name} {old_phone} to {new_phone} changed'
 
+
+# Delete contact
 @input_error
 def delete_contact(*args):
     name = Name(args[0])
@@ -128,18 +140,13 @@ def delete_contact(*args):
     ADDRESSBOOK.remove_record(rec)
     return f'Contact {name} deleted'
 
-# @input_error
-# def delete_this(*args):
-#     for phone in self.phones:
-#         if phone_number == phone.value:
-#             self.phones.remove(phone)
 
-
+# Show some contact
 def phone(*args):
     return ADDRESSBOOK.show_rec(args[0])
 
 
-# @input_error
+# Show all contacts
 def show_all(*args):
     return ADDRESSBOOK.show_all_rec()
 
